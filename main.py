@@ -20,7 +20,10 @@ def webhook():
     json_str = request.stream.read().decode("utf-8")
     update = telebot.types.Update.de_json(json_str)
     print(f"Update received: {update}")
-    bot.process_new_updates([update])
+    try:
+        bot.process_new_updates([update])
+    except Exception as e:
+        print(f'Error encountered when processing update: {e}')
     print("Bot processed update.")
     return "", 200
 
