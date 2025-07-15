@@ -30,7 +30,7 @@ if __name__ == "__main__":
     bot_thread.start()
 
     # Start Flask app to satisfy Render's port requirement
-    app.run(port=5002) # note that this line is blocking, and will keep the main process alive, so there is no need to run
+    app.run(host="0.0.0.0", port=5000) # note that this line is blocking, and will keep the main process alive, so there is no need to run
     # bot_thread.join()
     # the host="0.0.0.0" tells flask to accept requests from any ip address, not just local machines
     # disable debug_mode (unlike previous website projects)
