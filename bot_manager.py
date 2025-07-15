@@ -33,6 +33,7 @@ class BotManager:
 
     # replacing all CHAT_ID with message.chat.id
     def start(self, message):
+        print("Start command received")
         self.bot.send_message(chat_id=message.chat.id, text="🎵 Welcome! Enter /search to start searching for songs.")
 
     # replacing all CHAT_ID with message.chat.id
