@@ -28,11 +28,11 @@ def start_bot():
 
 # Start the bot with polling
 if __name__ == "__main__":
-    if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or os.environ.get("RENDER") == "true":
-        Thread(target=start_bot).start()
-
+    # if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or os.environ.get("RENDER") == "true":
+    #     Thread(target=start_bot).start()
+    Thread(target=start_bot).start()
     # Start Flask app to satisfy Render's port requirement
-    app.run(port=5001) # note that this line is blocking, and will keep the main process alive, so there is no need to run
+    app.run(port=5002) # note that this line is blocking, and will keep the main process alive, so there is no need to run
     # bot_thread.join()
     # the host="0.0.0.0" tells flask to accept requests from any ip address, not just local machines
     # disable debug_mode (unlike previous website projects)
