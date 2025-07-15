@@ -11,13 +11,6 @@ bot_manager = BotManager()
 bot = bot_manager.bot
 app = Flask(__name__)
 
-def setup_webhook():
-    bot.remove_webhook()
-    bot.set_webhook(url=WEBHOOK_URL)
-    print('Webhook setup')
-
-setup_webhook() # run this code immediately when the program runs
-
 @app.route("/")
 def home():
     return "Bot is running with webhook.", 200
@@ -32,4 +25,7 @@ def webhook():
     return "", 200
 
 if __name__ == "__main__":
+    print("Setting up webhook...")
+    bot.remove_webhook()
+    bot.set_webhook(url=WEBHOOK_URL)
     app.run(port=5001, debug=False)
