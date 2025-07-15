@@ -22,11 +22,14 @@ def test_telegram():
     except requests.exceptions.RequestException as e:
         return f"Error reaching Telegram API: {e}", 500
 
+def start_bot():
+    print("Starting bot with polling...")
+    bot.run()
+
 # Start the bot with polling
 if __name__ == "__main__":
-    print("Starting bot with polling...")
-    bot_thread = Thread(target=bot.run)
-    bot_thread.start()
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or os.environ.get("RENDER") == "true":
+        Thread(target=start_bot).start()
 
     # Start Flask app to satisfy Render's port requirement
     app.run(port=5001) # note that this line is blocking, and will keep the main process alive, so there is no need to run
