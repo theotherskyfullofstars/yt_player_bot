@@ -14,6 +14,7 @@ app = Flask(__name__)
 def setup_webhook():
     bot.remove_webhook()
     bot.set_webhook(url=WEBHOOK_URL)
+    print('Webhook setup')
 
 setup_webhook() # run this code immediately when the program runs
 
@@ -25,7 +26,9 @@ def home():
 def webhook():
     json_str = request.stream.read().decode("utf-8")
     update = telebot.types.Update.de_json(json_str)
+    print(f"Update received: {update}")
     bot.process_new_updates([update])
+    print("Bot processed update.")
     return "", 200
 
 if __name__ == "__main__":

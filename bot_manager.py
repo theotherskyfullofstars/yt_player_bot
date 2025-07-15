@@ -20,27 +20,33 @@ class BotManager:
 
         self.bot.message_handler(commands=['start'])(self.start)
         self.bot.message_handler(commands=['search'])(self.search_music)
-        self.bot.message_handler(func=lambda message: CHAT_ID in self.user_state and self.user_state[CHAT_ID] == "waiting_for_song")(self.process_search_query)
+        # self.bot.message_handler(func=lambda message: CHAT_ID in self.user_state and self.user_state[CHAT_ID] == "waiting_for_song")(self.process_search_query)
+        # removing the CHAT_ID restriction to message.chat.id
+        self.bot.message_handler(
+            func=lambda message: message.chat.id in self.user_state and self.user_state[message.chat.id] == "waiting_for_song")(
+            self.process_search_query)
         self.bot.callback_query_handler(func=lambda call: True)(self.process_calls)
         # note the callback_query_handler must have a function, and must accept the call, so to make the bot process all calls we just make the function output True everytime
 
     def run(self):
         self.bot.polling()
 
+    # replacing all CHAT_ID with message.chat.id
     def start(self, message):
-        self.bot.send_message(chat_id=CHAT_ID, text="🎵 Welcome! Enter /search to start searching for songs.")
+        self.bot.send_message(chat_id=message.chat.id, text="🎵 Welcome! Enter /search to start searching for songs.")
 
+    # replacing all CHAT_ID with message.chat.id
     def search_music(self, message):
-        self.bot.send_message(chat_id=CHAT_ID, text="🔎 Please enter the song name:")
+        self.bot.send_message(chat_id=message.chat.id, text="🔎 Please enter the song name:")
         # change user state to 'searching song'
-        self.user_state[CHAT_ID] = "waiting_for_song"
+        self.user_state[message.chat.id] = "waiting_for_song"
 
     # using .pop() on a list means removes an element at a particular index, eg. .pop(index), using .pop() on dictionary
     # means remove the element but you put the key inside, eg. .pop(key)
 
     def process_search_query(self, message):
         query = message.text
-        self.user_state.pop(CHAT_ID) # this removes the key from the self.user_state dictionary, effectively removing the value as well
+        self.user_state.pop(message.chat.id) # this removes the key from the self.user_state dictionary, effectively removing the value as well
         results = self.yt_searcher.search(query=query)
         markup = InlineKeyboardMarkup()
 
@@ -48,15 +54,15 @@ class BotManager:
             button = InlineKeyboardButton(text=html.unescape(result['video_title']), callback_data=result["video_id"])
             markup.add(button)
 
-        song_list_msg = self.bot.send_message(CHAT_ID, "Choose a song: ", reply_markup=markup)
-        self.user_last_message[CHAT_ID] = song_list_msg.message_id
+        song_list_msg = self.bot.send_message(message.chat.id, "Choose a song: ", reply_markup=markup)
+        self.user_last_message[message.chat.id] = song_list_msg.message_id
 
     def process_calls(self, call):#instead of message, now we just process the call
-        download_in_progress_msg = self.bot.send_message(CHAT_ID, "Download in progress... ⏳")
-        self.bot.delete_message(CHAT_ID, self.user_last_message[CHAT_ID])
+        download_in_progress_msg = self.bot.send_message(call.message.chat.id, "Download in progress... ⏳")
+        self.bot.delete_message(call.message.chat.id, self.user_last_message[call.message.chat.id])
 
         # Add the newly sent message to the last message
-        self.user_last_message[CHAT_ID] = download_in_progress_msg.message_id
+        self.user_last_message[call.message.chat.id] = download_in_progress_msg.message_id
 
         video_id = call.data
         youtube_url = f"https://www.youtube.com/watch?v={video_id}"
@@ -65,17 +71,17 @@ class BotManager:
         try:
             with open(file_path, "rb") as song:
                 # telegram reads audio files in binary mode, hence rb.
-                self.bot.send_audio(CHAT_ID, audio=song, performer=song_info['title'], title=song_info['title'], timeout=300)
+                self.bot.send_audio(call.message.chat.id, audio=song, performer=song_info['title'], title=song_info['title'], timeout=300)
                 # open the mp3 file downloaded on computer and then send this file to telegram. make sure to include
                 # performer and title details so the audio shows up properly on telegram
         except Exception as e:
             # Remove the last message
-            self.bot.delete_message(CHAT_ID, self.user_last_message[CHAT_ID])
-            self.bot.send_message(CHAT_ID, f"❌ Error encountered when downloading bot. Please try again: {e}")
+            self.bot.delete_message(call.message.chat.id, self.user_last_message[call.message.chat.id])
+            self.bot.send_message(call.message.chat.id, f"❌ Error encountered when downloading bot. Please try again: {e}")
 
-        self.bot.send_message(CHAT_ID, "Downloaded song. Enjoy! 🎉")
+        self.bot.send_message(call.message.chat.id, "Downloaded song. Enjoy! 🎉")
         # Remove the last message
-        self.bot.delete_message(CHAT_ID, self.user_last_message[CHAT_ID])
+        self.bot.delete_message(call.message.chat.id, self.user_last_message[call.message.chat.id])
 
         if os.path.exists(file_path):
             # os is a module, path is a SUB-module inside the os module. .exists() is a function, which checks if the file path exists or not
