@@ -7,6 +7,12 @@ bot_manager = BotManager()
 bot = bot_manager.bot
 app = Flask(__name__)
 
+def setup_webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url=WEBHOOK_URL)
+
+setup_webhook() # run this code immediately when the program runs
+
 TOKEN = os.getenv("BOT_TOKEN")
 WEBHOOK_PATH = f"/{TOKEN}"
 WEBHOOK_URL = f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}{WEBHOOK_PATH}"
@@ -21,11 +27,6 @@ def webhook():
     update = telebot.types.Update.de_json(json_str)
     bot.process_new_updates([update])
     return "", 200
-
-@app.before_first_request
-def setup_webhook():
-    bot.remove_webhook()
-    bot.set_webhook(url=WEBHOOK_URL)
 
 if __name__ == "__main__":
     app.run(port=5000, debug=False)
