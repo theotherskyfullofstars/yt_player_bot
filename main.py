@@ -28,3 +28,9 @@ def webhook():
         print(f'Error encountered when processing update: {e}')
     print("Bot processed update.")
     return "", 200
+
+if __name__ == "__main__":
+    print("Setting up webhook...")
+    bot.remove_webhook()
+    bot.set_webhook(url=WEBHOOK_URL)
+    app.run(port=5001, debug=False)
